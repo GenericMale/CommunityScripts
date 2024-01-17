@@ -1,0 +1,10 @@
+name: Image Drag and Drop
+description:
+  Update the image of Scenes, Movies, Performers, Studios and Tags 
+  by dropping an image from another website or the file system onto it in the list view
+version: 1.0
+ui:
+  requires: 
+  - StashUserscriptLibrary
+  javascript:
+  - imageDragAndDrop.js
