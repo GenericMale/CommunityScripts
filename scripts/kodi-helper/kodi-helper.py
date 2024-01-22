@@ -35,7 +35,7 @@ def main():
 
 
 def generateNFOFiles(args):
-    if not args.inline and args.outdir == "":
+    if not (args.inline or args.outdir):
         print("--outdir or --inline must be set\n")
         return
 
@@ -54,6 +54,12 @@ def generateNFOFiles(args):
         scenes = getScenes(i, filter)
 
         for scene in scenes:
+            # skip scenes without files
+            if not scene["files"]:
+                continue
+
+            # Quick fix for scenes with multiple files
+            scene["path"] = scene["files"][0]["path"]
             # don't regenerate if file already exists and not overwriting
             output = getOutputNFOFile(scene["path"], args)
             if not args.overwrite and os.path.exists(output):
@@ -165,11 +171,12 @@ query findScenes($filter: FindFilterType!, $scene_filter: SceneFilterType!) {
     scenes {
       id
       title
-      path
-      rating
+      files {
+        path
+      }
+      rating100
       details
       date
-      oshash
       paths {
         screenshot
         stream
@@ -222,8 +229,7 @@ def generateSTRM(scene):
     return scene["paths"]["stream"]
 
 def generateNFO(scene, args):
-    ret = """
-<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+    ret = """<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <movie>
     <title>{title}</title>
     <userrating>{rating}</userrating>
@@ -236,16 +242,16 @@ def generateNFO(scene, args):
     {thumbs}
     {fanart}
     {genres}
-</movie>
-"""
+</movie>"""
     tags = ""
     for t in scene["tags"]:
         tags = tags + """
     <tag>{}</tag>""".format(t["name"])
 
     rating = ""
-    if scene["rating"] != None:
-        rating = scene["rating"]
+    if scene["rating100"] != None:
+        # Kodi uses a 10 point scale, in increments of 0.5
+        rating = (2 * scene["rating100"] // 10) / 2.0
 
     date = ""
     if scene["date"] != None:
