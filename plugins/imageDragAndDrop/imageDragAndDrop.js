@@ -11,7 +11,7 @@
     }
 
     async function attachDropHandler(type, query, getResponseURL) {
-        stash.addEventListener(`page:${type}s`, () => {
+        stash.addEventListener(`stash:page:${type}s`, () => {
             waitForElementByXpath(`//div[contains(@class, '${type}-card')]`, () => {
                 for (const node of document.querySelectorAll(`.${type}-card`)) {
                     node.addEventListener("dragover", (e) => e.preventDefault());
